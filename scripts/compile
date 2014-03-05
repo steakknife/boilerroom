@@ -3,10 +3,12 @@ if [ -x `which clang >/dev/null 2>&1` ]; then
   exec clang -Werror -Wall -Weverything "$@"
 elif [ -x `which gcc >/dev/null 2>&1` ]; then
   exec gcc -Werror -Wall -Wextra "$@"
+elif [ -x `which cc >/dev/null 2>&1` ]; then
+  exec cc "$@"
 else
-  echo 'Unknown compiler' >&2
+  echo 'Unknown or missing compiler' >&2
   echo >&2
-  echo 'please report to https://github.com/steakknife/boilerroom/issues' >&2
+  echo 'If this is an actual error, report to https://github.com/steakknife/boilerroom/issues' >&2
   echo >&2
   exit 1
 fi
