@@ -1,0 +1,29 @@
+#!/bin/sh -e
+SUCCESS=0
+FAIL=0
+TOTAL=0
+trap 'RESULT=$?; rm -f test/*.out.$$; exit $RESULT' INT HUP QUIT TERM EXIT
+time for TEST in test/test_*.c; do
+  if scripts/compile -Iinclude "$TEST" -o "$TEST.out.$$" && "$TEST.out.$$" ; then
+    printf "."
+    SUCCESS=$((SUCCESS+1))
+  else
+    printf "F"
+    FAIL=$((FAIL+1))
+  fi
+  TOTAL=$((TOTAL+1))
+done
+echo
+if [ "$FAIL" != 1 ]; then
+  FAIL_PLURAL=s
+fi
+if [ "$SUCCESS" != 1 ]; then
+  SUCCESS_PLURAL=es
+fi
+if [ "$TOTAL" != 1 ]; then
+  TEST_PLURAL=s
+fi 
+echo "$FAIL failure${FAIL_PLURAL}  $SUCCESS success${SUCCESS_PLURAL}  $TOTAL test${TEST_PLURAL}"
+if [ "$FAIL" != 0 ]; then
+  exit 1
+fi

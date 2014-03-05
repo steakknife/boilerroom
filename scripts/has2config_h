@@ -1,0 +1,26 @@
+#!/bin/sh -e
+trap 'RESULT=$?; rm -f has/*.out.$$; exit $RESULT' INT TERM HUP QUIT EXIT
+PIDS=''
+for FILE in has/*.c; do
+  if scripts/compile "$FILE" -o "$FILE.out.$$" && "$FILE.out.$$" ; then
+    FEATURE="$(echo "$FILE" | grep -o "has_[a-z0-9_]*" | tr '[a-z]' '[A-Z]')"
+    echo "#define ${FEATURE} 1"
+  fi &
+  PIDS+=" $!"
+done
+for FILE in has/*.crun; do
+  if scripts/crun "$(cat $FILE)" ; then
+    FEATURE="$(echo "$FILE" | grep -o "has_[a-z0-9_]*" | tr '[a-z]' '[A-Z]')"
+    echo "#define ${FEATURE} 1"
+  fi &
+  PIDS+=" $!"
+done
+for FILE in has/*.header; do
+  HEADER="$(echo $FILE | sed 's%.*has/has_%%;s/_h.header//')"
+  if scripts/crun -h"${HEADER}.h" "1" ; then
+    FEATURE="$(echo "$FILE" | grep -o "has_[a-z0-9_]*" | tr '[a-z]' '[A-Z]')"
+    echo "#define ${FEATURE} 1"
+  fi &
+  PIDS+=" $!"
+done
+wait $PIDS
